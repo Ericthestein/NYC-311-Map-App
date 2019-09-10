@@ -1,0 +1,15 @@
+{
+  "name": "311-map",
+  "version": "0.0.0",
+  "description": "Work-In-Progress",
+  "author": null,
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "dependencies": {
+    "expo": "^26.0.0",
+    "react": "16.3.0-alpha.1",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-26.0.0.tar.gz",
+    "@expo/vector-icons": "6.2.1",
+    "react-native-elements": "0.18.5"
+  }
+}
