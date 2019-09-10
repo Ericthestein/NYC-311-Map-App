@@ -1,4 +1,4 @@
-// Made by Eric Stein
+// Made by Eric Stein, Matthew Vaysfeld, Sameer Jain, and Adam Bougaev
 
 // Requirements
 
