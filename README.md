@@ -9,13 +9,10 @@ From here, you can immediately run it on a physical or simulated Android/iOS dev
 
 ## Built With
 
-* [React Native](https://facebook.github.io/react-native/) - The web framework used
-* [Expo](https://expo.io/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [React Native](https://facebook.github.io/react-native/) - iOS/Android Cross-Platform Framework
+* [Expo](https://expo.io/) - SDK and workflow
+* [NYC's Open 311 Dataset](https://developer.cityofnewyork.us/) - Provider of data
 
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
 ## Authors
 
