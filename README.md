@@ -1,6 +1,6 @@
 # NYC-311-Map-App
 
-An Android/iOS app written in React Native that populates a map with recent 311 incidents. Made as part of the first NYC CS4All Hack League.
+An Android/iOS app written in React Native that populates a map with recent 311 incidents in New York City. Made as part of the first NYC CS4All Hack League.
 Made by Eric Stein, Matthew Vaysfeld, Sameer Jain, and Adam Bougaev
 
 ## Expo Snack
