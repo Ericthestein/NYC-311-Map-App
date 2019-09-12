@@ -2,6 +2,10 @@
 
 An Android/iOS app written in React Native that populates a map with recent 311 incidents in New York City. Made as part of the first NYC CS4All Hack League.
 
+## Demo
+
+![](311AppGif.gif)
+
 ## Expo Snack
 
 This project can also be found as an Expo snack at https://snack.expo.io/@ericthestein/311-map
