@@ -22,11 +22,11 @@ From here, you can immediately run it on a physical or simulated Android/iOS dev
 
 ## Authors
 
-* **Eric Stein** - *Lead Programmer, Lead Designer*
+* [**Eric Stein**](https://github.com/Ericthestein) - *Lead Programmer, Lead Designer*
 * **Matthew Vaysfeld** - *Programmer*
 * **Adam Bougaev** - *Programmer*
 * **Sameer Jain** - *Designer*
-* **Dong Yang** - *Designer*
+* [**Dong Yang**](https://github.com/dyang21) - *Designer*
 
 ## License
 
