@@ -196,20 +196,13 @@ class MainMap extends React.Component {
   }
 
   componentWillMount() {
-    if (Platform.OS === 'android' && !Constants.isDevice) {
-      this.setState({
-        errorMessage:
-          'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
-      });
-    } else {
-      this._getLocationAsync();
-    }
-    this.update311Data();
+    // this.getLocationAsync()
+    this.update311Data()
   }
 
   _handleMapRegionChange = mapRegion => {};
 
-  async update311Data() {
+  update311Data = async () => {
     fetch(base311URL + tokenQuery + limitFilter + dateFilter)
       .then(response => response.json())
       .then(responseJson => {
@@ -222,18 +215,20 @@ class MainMap extends React.Component {
       });
   }
 
-  _getLocationAsync = async () => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access location was denied',
-      });
-    }
+  getLocationAsync = async () => {
+    if (!(Platform.OS == 'web')) {
+      let { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status !== 'granted') {
+        this.setState({
+          errorMessage: 'Permission to access location was denied',
+        });
+      }
 
-    let location = await Location.getCurrentPositionAsync({});
-    this.setState(() => ({
-      userLocation: location
-    }));
+      let location = await Location.getCurrentPositionAsync({});
+      this.setState(() => ({
+        userLocation: location
+      }));
+    }
   };
 
   render() {
