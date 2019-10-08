@@ -1,10 +1,11 @@
-// Made by Eric Stein, Matthew Vaysfeld, Sameer Jain, Adam Bougaev, Dong Yang
+// Made by Eric Stein, Matthew Vaysfeld, Sameer Jain, Adam Bougaev, Donald Yang
 
 // Requirements
 
 import React, { Component } from 'react';
-import { Button, View, StyleSheet, ScrollView, Image, Alert, Text, Dimensions, TouchableOpacity, Platform  } from 'react-native';
-import { Constants, MapView, Location, Permissions } from 'expo';
+import { Button, View, StyleSheet, ScrollView, Image, Alert, Text, Dimensions, TouchableOpacity, Platform, TextInput, Picker, Animated } from 'react-native';
+import { Constants, Location, Permissions } from 'expo';
+import MapView from 'react-native-maps';
 //import { FormLabel, FormInput, FormValidationMessage } from 'react-native-elements'
 
 // Constants
@@ -12,8 +13,8 @@ import { Constants, MapView, Location, Permissions } from 'expo';
 const screen = Dimensions.get('window');
 
 const ASPECT_RATIO = screen.width / screen.height;
-const LATITUDE = 37.78825;
-const LONGITUDE = -122.4324;
+const LATITUDE = 40.643501
+const LONGITUDE = -74.076202
 const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
@@ -21,6 +22,20 @@ const base311URL = 'https://data.cityofnewyork.us/resource/fhrw-4uyv.json?';
 const tokenQuery = '$$app_token=mr3vUXRfLAEL26Z1iobH0yJUC';
 const limitFilter = '&$limit=1000';
 const dateFilter = '&$order=created_date DESC';
+
+const limitFilterForColumns = '&$limit=1000'
+const complaintColumnFilter = '&$select=complaint_type'
+
+/*
+fetch(base311URL + tokenQuery + limitFilterForColumns + complaintColumnFilter)
+  .then(response => response.json())
+  .then(responseJson => 
+    console.log(responseJson)
+  )
+  .catch(error => {
+    console.error(error);
+  });
+*/
 
 // Icons
 
@@ -36,6 +51,114 @@ function getIcon(complaintType, descriptor) {
     }
   }
   return null;
+}
+
+// Form Class
+
+class Form extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {}
+    var tempState = {}
+    this.props.questions.map((questionData, questionIndex) => {
+      switch(questionData.type) {
+        case 'drop-down':
+              tempState["Question " + questionIndex] = {
+                selectedValue: questionData.options[0]
+              }
+          return
+        case 'write-in':
+          tempState["Question " + questionIndex] = {
+            textValue: questionData.placeholder
+          }
+         return
+      }
+    })
+    this.state = tempState
+  }
+  data = {}
+  updateQuestionData(questionNumber, newData) {
+    this.data['Question ' + questionNumber] = newData
+  }
+  render() {
+    return(
+      <ScrollView style={{...this.props.style}}>
+        <Text style={{fontSize: 32, textDecorationLine: 'underline', textAlign: 'center'}}>{this.props.title}</Text>
+        <Text style={{fontSize: 20}}>{this.props.description}{"\n"}</Text>
+        {this.props.questions.map((questionData, questionIndex) => {
+          switch(questionData.type) {
+            case 'write-in':
+              return(
+                <View>
+                  <Text style={this.styles.question}>Question {questionIndex + 1}: {questionData.question}</Text>
+                  <View style={{borderStyle: 'dotted', opacity: 1, borderColor: 'red', borderWidth: 2, height: 50}}>
+                    <TextInput 
+                      style={{flex:1}}
+                      value={this.state["Question " + questionIndex].textValue}
+                      onChangeText={(text) => {
+                        this.setState({
+                          ["Question " + questionIndex]: {
+                            textValue: text
+                          }
+                        })
+                        this.updateQuestionData(questionIndex, text)
+                      }}
+                      multiline= {true}
+                      textAlignVertical= 'top'
+                    />
+                  </View>
+                </View>
+              )
+            case 'drop-down':
+              return(
+                <View>
+                  <Text style={this.styles.question}>Question {questionIndex + 1}: {questionData.question}</Text>
+                  <View style={{borderStyle: 'dotted', opacity: 1, borderColor: 'red', borderWidth: 2, height: 100}}>
+                    <Picker
+                      onValueChange={(itemValue, itemIndex) => {
+                        this.setState({
+                          ["Question " + questionIndex]: {
+                            selectedValue: itemValue
+                          }
+                        })
+                        this.updateQuestionData(questionIndex, itemValue)
+                      }}
+                      prompt= {questionData.question}
+                      selectedValue={this.state["Question " + questionIndex].selectedValue}
+                      style={{height: 30, flex: 1}}
+                      itemStyle={{height: 30, flex: 1}}
+                    >
+                      {questionData.options.map(option => {
+                        return(
+                          <Picker.Item
+                            label={option}
+                            value={option}
+                          />
+                        )
+                      })}
+                    </Picker>
+                  </View>
+                </View>
+              )
+          }
+        })}
+        <Button
+          title={this.props.buttonTitle || 'Submit'}
+          onPress={() => {
+            let dataCopy = Object.assign({}, this.data)
+            this.props.onSubmit(dataCopy)
+          }}
+        />
+      </ScrollView>
+    )
+  }
+
+  styles = StyleSheet.create({
+    question: {
+      fontSize: 20,
+      textAlign: 'left'
+    }
+  })
 }
 
 // Custom Marker Callout
@@ -65,19 +188,11 @@ class MainMap extends React.Component {
     super(props);
 
     this.state = {
-      coordinate: new MapView.AnimatedRegion({
-        latitude: LATITUDE,
-        longitude: LONGITUDE,
-      }),
       userLocation: null,
       errorMessage: null,
       data311: [],
       submittingReport: false,
     };
-  }
-
-  onReport() {
-    Alert.alert("Button Pressed", "testing")
   }
 
   componentWillMount() {
@@ -89,21 +204,12 @@ class MainMap extends React.Component {
     } else {
       this._getLocationAsync();
     }
-
-    /*
-    setInterval(() => {
-      this.update311Data()
-    }, 1000 * 60) */
     this.update311Data();
   }
 
   _handleMapRegionChange = mapRegion => {};
 
   async update311Data() {
-    // Get ReverseGeocode Location
-
-    // Create Filters from ReverseGeocode data
-
     fetch(base311URL + tokenQuery + limitFilter + dateFilter)
       .then(response => response.json())
       .then(responseJson => {
@@ -126,74 +232,156 @@ class MainMap extends React.Component {
 
     let location = await Location.getCurrentPositionAsync({});
     this.setState(() => ({
-      userLocation: location,
+      userLocation: location
     }));
   };
 
   render() {
     return (
-      <View style={styles.container}>
-        <MapView
-          provider={this.props.provider}
-          style={styles.map}
-          region={{
-            latitude:
-              (this.state.userLocation &&
-                this.state.userLocation.coords.latitude) ||
-              LATITUDE,
-            longitude:
-              (this.state.userLocation &&
-                this.state.userLocation.coords.longitude) ||
-              LONGITUDE,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          }}
-          followUserLocation={true}
-          onRegionChange={this._handleMapRegionChange}>
-          {this.state.data311.map(data => {
-            if (
-              data.latitude &&
-              data.longitude &&
-              data.complaint_type &&
-              data.descriptor &&
-              data.created_date
-            ) {
-              return (
-                <MapView.Marker
-                  coordinate={
-                    new MapView.AnimatedRegion({
-                      latitude: data.latitude,
-                      longitude: data.longitude,
-                    })
+      <MapView
+        provider={this.props.provider}
+        style={styles.map}
+        region={{
+          latitude:
+            (this.state.userLocation &&
+              this.state.userLocation.coords.latitude) ||
+            LATITUDE,
+          longitude:
+            (this.state.userLocation &&
+              this.state.userLocation.coords.longitude) ||
+            LONGITUDE,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        }}
+      >
+        {this.state.data311.map(data => {
+          if (
+            data.latitude &&
+            data.longitude &&
+            data.complaint_type &&
+            data.descriptor &&
+            data.created_date
+          ) {
+            return (
+              <MapView.Marker
+                coordinate={
+                  {
+                    latitude: Number(data.latitude),
+                    longitude: Number(data.longitude),
                   }
-                  title={data.complaint_type}
-                  description={
-                    data.descriptor +
-                    ' (Date Created: ' +
-                    data.created_date +
-                    ')'
-                  }
-                  //image={getIcon(data.complaint_type, data.descriptor)}
-                >
-                  {getIcon(data.complaint_type, data.descriptor) && (
-                    <Image
-                      source={getIcon(data.complaint_type, data.descriptor)}
-                      style={{ width: 30.125, height: 61.25 }}
-                    />
-                  )}
-                  <CustomCallout data={data} />
-                </MapView.Marker>
-              );
-            }
-          })}
-          // current location marker /*
-          {this.state.userLocation && <MapView.Marker />}
-        </MapView>
-        <View style={styles.bottomBar}>
-          <Button title="Report" onPress={this.onReport} />
-        </View>
-      </View>
+                }
+                title={data.complaint_type}
+                description={
+                  data.descriptor +
+                  ' (Date Created: ' +
+                  data.created_date +
+                  ')'
+                }
+              >
+                {getIcon(data.complaint_type, data.descriptor) != null && (
+                  <Image
+                    source={getIcon(data.complaint_type, data.descriptor)}
+                    style={{ width: 30.125, height: 61.25 }}
+                  />
+                )}
+                <CustomCallout data={data} />
+              </MapView.Marker>
+            )
+          }
+        })}
+      </MapView>
     );
+  }
+}
+
+export default class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      reporting: false,
+      bottomBarHeight: new Animated.Value(80),
+    }
+  }
+  initialBottomBarHeight = 80
+  onReport() {
+    var newReporting = !this.state.reporting
+
+    switch(newReporting) {
+      case true:
+        Animated.timing(this.state.bottomBarHeight, {
+          toValue: 7.5*this.initialBottomBarHeight,
+          duration: 1000
+        }).start()
+        break
+      case false:
+        Animated.timing(this.state.bottomBarHeight, {
+          toValue: this.initialBottomBarHeight,
+          duration: 1000
+        }).start()
+        break
+    }
+
+    this.setState({
+      reporting: newReporting
+    })
+   
+  }
+  onReportSubmission(data) {
+    Alert.alert("Thank you for the report. We have received the following data from you: " + JSON.stringify(data))
+  }
+  render() {
+    return(
+      <View style={styles.container}>
+        <MainMap/>
+        <Animated.View style={{
+          justifyContent: 'center',
+          height: this.state.bottomBarHeight,
+          alignItems: 'center',
+          backgroundColor: 'white',
+          flex: 1,
+          opacity: 0.8,
+          borderStyle: 'solid',
+          borderTopWidth: 5
+        }}>
+          {this.state.reporting == true &&
+            <Form
+              style= {{}}
+              title= {'Report Complaint To 311'}
+              description= {'Please fill out the appropriate fields.'}
+              onSubmit= {this.onReportSubmission}
+              questions= {[
+                {
+                  type: 'drop-down',
+                  question: 'Complaint Type',
+                  options: [
+                    'Illegal Parking',
+                    'Noise - Vehicle',
+                    'Noise - Residential',
+                    'Blocked Driveway',
+                    'Noise - Commercial',
+                    'Taxi Complaint',
+                    'Request Large Bulky Item Collection',
+                    'Street Condition',
+                    'HPD Literature Request',
+                    'Street Condition',
+                    'Rodent',
+                    'Heating',
+                    'HEAT/HOT WATER',
+                    'Derelict Vehicle'
+                  ]
+                },
+                {
+                  type: 'write-in',
+                  question: 'Complaint Description',
+                  placeholder: ''
+                }
+              ]}
+            />
+          }
+          <Button title={this.state.reporting == false && "Report" || "Cancel"} onPress={this.onReport.bind(this)} style={{flex:1}}/>
+        </Animated.View>
+      </View>
+    )
   }
 }
 
@@ -234,11 +422,6 @@ const styles = StyleSheet.create({
     width: 60,
   },
   customCallout: {
-    /*
-    shadowOffset: {width: 10, height: 10},
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    */
     width: 300,
     height: 75,
     alignItems: 'center',
@@ -246,16 +429,10 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     justifyContent: 'center',
-    height: 60,
+    height: 80,
     alignItems: 'center',
     backgroundColor: 'white',
     flex: 1,
     opacity: 0.8
   }
 });
-
-export default class App extends Component {
-  render() {
-    return <MainMap />;
-  }
-}
