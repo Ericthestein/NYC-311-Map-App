@@ -26,7 +26,7 @@ From here, you can immediately run it on a physical or simulated Android/iOS dev
 * **Matthew Vaysfeld** - *Programmer*
 * **Adam Bougaev** - *Programmer*
 * **Sameer Jain** - *Designer*
-* [**Dong Yang**](https://github.com/dyang21) - *Designer*
+* [**Donald Yang**](https://github.com/dyang21) - *Designer*
 
 ## License
 
