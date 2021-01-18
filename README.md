@@ -23,7 +23,7 @@ From here, you can immediately run it on a physical or simulated Android/iOS dev
 ## Authors
 
 * [**Eric Stein**](https://github.com/Ericthestein) - *Lead Programmer, Lead Designer*
-* **Matthew Vaysfeld** - *Programmer*
+* [**Matthew Vaysfeld**](https://github.com/MattVaysfeld) - *Programmer*
 * **Adam Bougaev** - *Programmer*
 * **Sameer Jain** - *Designer*
 * [**Donald Yang**](https://github.com/dyang21) - *Designer*
